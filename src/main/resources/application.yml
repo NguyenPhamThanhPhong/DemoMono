@@ -1,0 +1,19 @@
+#spring:
+#    application:
+#        name: test_join
+
+springdoc:
+    api-docs:
+        enabled: false
+    swagger-ui:
+        enabled: false
+server:
+    port: ${PORT:8089}
+spring:
+    profiles:
+        active:
+            - ${SPRING_ACTIVE_PROFILE:local}
+    application:
+        name: BSL-CL customer service
+    webflux:
+        base-path: /bsl-cl/api/v1
