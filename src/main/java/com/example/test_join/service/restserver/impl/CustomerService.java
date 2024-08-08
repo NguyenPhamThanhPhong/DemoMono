@@ -1,6 +1,5 @@
-package com.example.test_join.service.restserver;
+package com.example.test_join.service.restserver.impl;
 
-import java.util.List;
 
 import com.example.test_join.dto.client.request.BranchClientRequest;
 import com.example.test_join.dto.client.request.CountryClientRequest;
@@ -17,10 +16,9 @@ import com.example.test_join.dto.server.request.GetCustomerRequest;
 import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.dto.server.response.CustomerResponseDTO;
 import com.example.test_join.service.restclient.CustomerClient;
-import com.example.test_join.share.constant.ApplicationConstants;
-import com.example.test_join.share.enums.ResponseEnum;
+import com.example.test_join.service.restserver.ICustomerService;
 
-import lombok.RequiredArgsConstructor;
+
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -40,11 +38,8 @@ public class CustomerService implements ICustomerService {
         return Mono.deferContextual(
             contextView ->
             {
-                var requestId = contextView.getOrDefault(
-                    ApplicationConstants.INTERNAL_REQUEST_TRACE_ID,"");
-            Mono<BaseResponse<CustomerClientResponse>> customerResponsesMono  = customerClient.getCustomerMono(customerClientRequest);
-                BaseResponse<CustomerResponseDTO> response = new BaseResponse<>();
-                return customerResponsesMono;
+                //transfer cai requestID
+                return customerClient.getCustomerMono(customerClientRequest);
             }
         ).flatMap(
                 res ->
@@ -56,12 +51,16 @@ public class CustomerService implements ICustomerService {
                     CountryClientRequest countryClientRequest = new CountryClientRequest("DEFAULT COUNTRY");
                     Mono<BaseResponse<BranchClientResponse>> branchResponsesMono =
                             validateCustomerBranch(res.getData()).then(
-                                    branchClient.getBranches(branchClientRequest));
+                                    branchClient.getBranchMono(branchClientRequest))
+                                    .defaultIfEmpty(null);
+                    // TODO: handle case when branch is null
                     Mono<BaseResponse<CountryClientResponse>> countryResponseMono =
                             validateCustomerCountry(res.getData())
                                     .then(countryClient.getCountries(countryClientRequest));
+                    
                     Mono<Tuple2<BaseResponse<BranchClientResponse>, BaseResponse<CountryClientResponse>>> monoBranchCountry =
                             Mono.zip(branchResponsesMono,countryResponseMono);
+                            //PROMISE ALL
                     monoBranchCountry.subscribe(
                             result -> {
                                 BaseResponse<BranchClientResponse> branchResponse = result.getT1();

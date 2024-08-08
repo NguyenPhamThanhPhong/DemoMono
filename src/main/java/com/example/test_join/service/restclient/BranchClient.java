@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class BranchClient {
-    public Mono<BaseResponse<BranchClientResponse>> getBranches(BranchClientRequest request) {
+    public Mono<BaseResponse<BranchClientResponse>> getBranchMono(BranchClientRequest request) {
         BaseResponse<BranchClientResponse> result = BaseResponse.baseResponse(
                 "b2cd72c0-61f7-4348-926d-8eefaca8e09f",
                 ResponseEnum.SUCCESS);

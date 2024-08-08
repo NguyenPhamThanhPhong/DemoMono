@@ -11,10 +11,22 @@ import reactor.core.publisher.Mono;
 @Component
 public class CustomerClient {
         public Mono<BaseResponse<CustomerClientResponse>> getCustomerMono(CustomerClientRequest request) {
-        BaseResponse<CustomerClientResponse> result = BaseResponse.baseResponse(
-                "b2cd72c0-61f7-4348-926d-8eefaca8e09f",
-                ResponseEnum.SUCCESS);
-        result.setData(CustomerClientResponse.Default());
-        return Mono.just(result);
-    }
+                BaseResponse<CustomerClientResponse> result = BaseResponse.baseResponse(
+                                "b2cd72c0-61f7-4348-926d-8eefaca8e09f",
+                                ResponseEnum.SUCCESS);
+                result.setData(CustomerClientResponse.Default());
+                return Mono.just(result);
+        }
+
+        public Mono<BaseResponse<CustomerClientResponse>> getCientNo(CustomerClientRequest request) {
+                BaseResponse<CustomerClientResponse> result = BaseResponse.baseResponse(
+                                "b2cd72c0-61f7-4348-926d-8eefaca8e09f",
+                                ResponseEnum.SUCCESS);
+                CustomerClientResponse data = new CustomerClientResponse();
+                data.setClientNo("DEFAULT CLIENT NO");
+                data.setCtrlBranch("DEFAULT BRANCH");
+                result.setData(data);
+                return Mono.just(result);
+        }
+
 }

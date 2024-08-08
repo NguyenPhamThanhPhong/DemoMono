@@ -1,9 +1,12 @@
 package com.example.test_join.controller;
 
+import com.example.test_join.dto.server.request.BaseRequest;
+import com.example.test_join.dto.server.request.GetAccountRequest;
 import com.example.test_join.dto.server.request.GetCustomerRequest;
+import com.example.test_join.dto.server.response.AccountResponseDTO;
 import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.dto.server.response.CustomerResponseDTO;
-import com.example.test_join.service.restserver.CustomerService;
+import com.example.test_join.service.restserver.IAccountService;
 import com.example.test_join.service.restserver.ICustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,13 +16,29 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("staff-info")
+@RequestMapping("customers")
 @RequiredArgsConstructor
 public class CustomerController {
     private final ICustomerService customerService;
+    private final IAccountService accountService;
 
-    @GetMapping("{clientNo}")
-    public Mono<BaseResponse<CustomerResponseDTO>> retrieveStaffInfo(@PathVariable("clientNo") String clientNo) {
+    @GetMapping("{clientNo}/profile/{requestId}")
+    public Mono<BaseResponse<CustomerResponseDTO>> retrieveStaffInfo(
+            @PathVariable("clientNo") String clientNo,
+            @PathVariable String requestId) {
         return customerService.getCustomerInfo(new GetCustomerRequest(clientNo));
     }
+
+    @GetMapping("{clientNo}/account/{requestId}")
+    public Mono<BaseResponse<AccountResponseDTO>> getMethodName(@PathVariable("clientNo") String clientNo,
+            @PathVariable String requestId) {
+        // Xử lý mono
+        GetAccountRequest getAccountRequest = new GetAccountRequest(clientNo);
+        BaseRequest<GetAccountRequest> baseRequest = BaseRequest.<GetAccountRequest>builder()
+                .data(getAccountRequest)
+                .requestId(requestId).build();
+        baseRequest.setData(new GetAccountRequest(clientNo));
+        return accountService.getAccountInfo(baseRequest);
+    }
+
 }
