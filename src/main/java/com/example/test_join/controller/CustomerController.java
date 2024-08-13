@@ -8,6 +8,8 @@ import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.dto.server.response.CustomerResponseDTO;
 import com.example.test_join.service.restserver.IAccountService;
 import com.example.test_join.service.restserver.ICustomerService;
+
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +28,10 @@ public class CustomerController {
     public Mono<BaseResponse<CustomerResponseDTO>> retrieveStaffInfo(
             @PathVariable("clientNo") String clientNo,
             @PathVariable String requestId) {
-        return customerService.getCustomerInfo(new GetCustomerRequest(clientNo));
+        BaseRequest<GetCustomerRequest> baseRequest = BaseRequest
+                .<GetCustomerRequest>builder()
+                .requestId(requestId).data(new GetCustomerRequest(clientNo)).build();
+        return customerService.getCustomerInfo(baseRequest);
     }
 
     @GetMapping("{clientNo}/account/{requestId}")

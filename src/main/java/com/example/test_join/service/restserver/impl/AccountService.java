@@ -39,25 +39,22 @@ public class AccountService extends BaseService implements IAccountService {
         return validateRequest(request).then(
                 Mono.defer(() -> {
                     CustomerClientRequest customerClientRequest = CustomerClientRequest.template(request.getClientNo());
-                    return customerClient.getCientNo(customerClientRequest)
+                    BaseRequest<CustomerClientRequest> baseRequestCustomer = BaseRequest.fromBaseRequest(baseRequest);
+                    baseRequestCustomer.setData(customerClientRequest);
+                    return customerClient.getCientNo(baseRequestCustomer)
                             .flatMap(this::validateClientNo)
                             .flatMap(this::validateBranch)
                             .flatMap(baseCustomerClientResponse -> {
                                 BaseRequest<AccountClientRequest> baseAccRequest = BaseRequest
-                                        .<AccountClientRequest>builder()
-                                        .requestId(baseRequest.getRequestId())
-                                        .requestDate(baseRequest.getRequestDate())
-                                        .requestUser(baseRequest.getRequestUser())
-                                        .requestChannel(baseRequest.getRequestChannel())
-                                        .data(AccountClientRequest.template(
-                                                baseCustomerClientResponse.getData().getClientNo(),
-                                                baseCustomerClientResponse.getData().getCtrlBranch()))
-                                        .build();
+                                        .fromBaseRequest(baseRequest);
+                                baseAccRequest.setData(AccountClientRequest.template(
+                                        baseCustomerClientResponse.getData().getClientNo(),
+                                        baseCustomerClientResponse.getData().getCtrlBranch()));
                                 return accountClient.getAccountMono(baseAccRequest);
                             }).flatMap(
                                     baseAccountClientRes -> {
-                                        BaseResponse<AccountResponseDTO> baseResponse = BaseResponse.baseResponse(
-                                                baseAccountClientRes.getRequestId(), DATA_SUCCESS);
+                                        BaseResponse<AccountResponseDTO> baseResponse = BaseResponse
+                                                .fromBaseResponse(baseAccountClientRes);
                                         baseResponse.setData(
                                                 new AccountResponseDTO(baseAccountClientRes.getData().getAccountNo(),
                                                         baseAccountClientRes.getData().getBranch()));
@@ -94,7 +91,8 @@ public class AccountService extends BaseService implements IAccountService {
                 !Objects.equals(baseResponse.getResponseCode(), DATA_SUCCESS.getCode())) {
             return Mono.error(new ResourceNotFoundException(DATA_NOT_FOUND.getMessage()));
         }
-        BaseResponse<AccountClientRequest> baseResponseAccountClient = BaseResponse.baseResponse(baseResponse.getRequestId(), DATA_SUCCESS);
+        BaseResponse<AccountClientRequest> baseResponseAccountClient = BaseResponse
+                .baseResponse(baseResponse.getRequestId(), DATA_SUCCESS);
         AccountClientRequest accountClientRequest = AccountClientRequest.builder()
                 .clientNo(baseResponse.getData().getClientNo())
                 .ctrlBranch(baseResponse.getData().getCtrlBranch())

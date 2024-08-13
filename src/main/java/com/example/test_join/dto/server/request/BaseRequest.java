@@ -23,4 +23,13 @@ public class BaseRequest<T> {
 
     @JsonProperty("data")
     private T data;
+
+    public static <T> BaseRequest<T> fromBaseRequest(BaseRequest<?> baseRequest) {
+        return BaseRequest.<T>builder()
+                .requestId(baseRequest.getRequestId())
+                .requestDate(baseRequest.getRequestDate())
+                .requestUser(baseRequest.getRequestUser())
+                .requestChannel(baseRequest.getRequestChannel())
+                .build();
+    }
 }

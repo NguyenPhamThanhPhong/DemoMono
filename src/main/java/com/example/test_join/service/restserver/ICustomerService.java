@@ -1,5 +1,6 @@
 package com.example.test_join.service.restserver;
 
+import com.example.test_join.dto.server.request.BaseRequest;
 import com.example.test_join.dto.server.request.GetCustomerRequest;
 import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.dto.server.response.CustomerResponseDTO;
@@ -9,5 +10,5 @@ import reactor.core.publisher.Mono;
 
 @Service
 public interface ICustomerService {
-    Mono<BaseResponse<CustomerResponseDTO>> getCustomerInfo(GetCustomerRequest request);
+    Mono<BaseResponse<CustomerResponseDTO>> getCustomerInfo(BaseRequest<GetCustomerRequest> request);
 }

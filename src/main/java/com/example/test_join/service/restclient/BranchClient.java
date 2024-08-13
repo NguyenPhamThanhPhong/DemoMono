@@ -2,6 +2,7 @@ package com.example.test_join.service.restclient;
 
 import com.example.test_join.dto.client.request.BranchClientRequest;
 import com.example.test_join.dto.client.response.BranchClientResponse;
+import com.example.test_join.dto.server.request.BaseRequest;
 import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.share.enums.ResponseEnum;
 
@@ -10,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class BranchClient {
-    public Mono<BaseResponse<BranchClientResponse>> getBranchMono(BranchClientRequest request) {
+    public Mono<BaseResponse<BranchClientResponse>> getBranchMono(BaseRequest<BranchClientRequest> request) {
         BaseResponse<BranchClientResponse> result = BaseResponse.baseResponse(
                 "b2cd72c0-61f7-4348-926d-8eefaca8e09f",
                 ResponseEnum.SUCCESS);

@@ -2,6 +2,7 @@ package com.example.test_join.service.restclient;
 
 import com.example.test_join.dto.client.request.CountryClientRequest;
 import com.example.test_join.dto.client.response.CountryClientResponse;
+import com.example.test_join.dto.server.request.BaseRequest;
 import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.share.enums.ResponseEnum;
 
@@ -12,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 public class CountryClient {
     
-    public Mono<BaseResponse<CountryClientResponse>> getCountries(CountryClientRequest request) {
+    public Mono<BaseResponse<CountryClientResponse>> getCountries(BaseRequest<CountryClientRequest> request) {
         BaseResponse<CountryClientResponse> result = BaseResponse.baseResponse(
                 "b2cd72c0-61f7-4348-926d-8eefaca8e09f",
                 ResponseEnum.SUCCESS);
