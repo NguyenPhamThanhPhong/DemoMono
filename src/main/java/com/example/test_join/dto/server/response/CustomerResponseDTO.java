@@ -1,6 +1,8 @@
 package com.example.test_join.dto.server.response;
 
 import com.example.test_join.dto.client.response.CustomerClientResponse;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 @Data
@@ -10,14 +12,19 @@ public class CustomerResponseDTO {
     private String clientName;
     private String clientShort;
     private String clientType;
+    @JsonProperty("country")
     private String countryDesc;
+    @JsonProperty("state")
     private String stateLoc;
     private String clientNo;
     private String globalId;
     private String taxFileNo;
+    @JsonProperty("branch")
     private String ctrlBranch;
     private String branchName;
+    @JsonProperty("date_of_issue")
     private String dtOfIssuance; 
+    @JsonProperty("place_of_issue")
     private String placeOfIssuance;
     private String registeredCapital;
     private String acctExec; 

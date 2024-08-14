@@ -7,17 +7,15 @@ import com.example.test_join.dto.client.response.CountryClientResponse;
 import com.example.test_join.service.restclient.BranchClient;
 import com.example.test_join.service.restclient.CountryClient;
 
-import static com.example.test_join.share.enums.ResponseEnum.DATA_SUCCESS;
 
-import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.test_join.dto.client.request.CustomerClientRequest;
+import com.example.test_join.dto.client.request.CustomerGlobalClientRequest;
 import com.example.test_join.dto.client.response.CustomerClientResponse;
 import com.example.test_join.dto.server.request.BaseRequest;
-import com.example.test_join.dto.server.request.GetCustomerRequest;
 import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.dto.server.response.CustomerResponseDTO;
 import com.example.test_join.exception.ResourceNotFoundException;
@@ -38,45 +36,42 @@ public class CustomerService implements ICustomerService {
     private CountryClient countryClient;
 
     @Override
-    public Mono<BaseResponse<CustomerResponseDTO>> getCustomerInfo(BaseRequest<GetCustomerRequest> baseRequest) {
-        GetCustomerRequest request = baseRequest.getData();
+    public Mono<BaseResponse<CustomerResponseDTO>> getCustomerGlobalInfo(
+            BaseRequest<CustomerGlobalClientRequest> baseRequest) {
         return Mono.deferContextual(
-                contextView -> {
-                    CustomerClientRequest customerClientRequest = CustomerClientRequest.template(request.getClientNo());
-                    BaseRequest<CustomerClientRequest> baseRequestCustomer = BaseRequest
-                            .<CustomerClientRequest>builder()
-                            .data(customerClientRequest)
-                            .requestId(baseRequest.getRequestId())
-                            .requestDate(baseRequest.getRequestDate())
-                            .requestUser(baseRequest.getRequestUser())
-                            .requestChannel(baseRequest.getRequestChannel())
-                            .build();
-                    return customerClient.getCustomerMono(baseRequestCustomer);
-                }).flatMap(
-                        res -> {
-                            CustomerResponseDTO customerResponseDTO = CustomerResponseDTO
-                                    .fromCustomerClientResponse(res.getData());
-                            // PROMISE ALL
-                            Mono<Tuple2<BaseResponse<BranchClientResponse>, BaseResponse<CountryClientResponse>>> monoBranchCountry = GetBranchAndCountry(
-                                    baseRequest, res);
-                            monoBranchCountry.subscribe(
-                                    result -> {
-                                        BaseResponse<BranchClientResponse> branchResponse = result.getT1();
-                                        BaseResponse<CountryClientResponse> countryResponse = result.getT2();
-                                        customerResponseDTO.setBranchName(branchResponse.getData().getBranchName());
-                                        customerResponseDTO.setCountryDesc(countryResponse.getData().getCountryDesc());
-                                    });
-                            BaseResponse<CustomerResponseDTO> baseResponse = new BaseResponse<>();
-                            baseResponse.setRequestId(baseRequest.getRequestId());
-                            baseResponse.setResponseCode(DATA_SUCCESS.getCode());
-                            baseResponse.setMessage(DATA_SUCCESS.getMessage());
-                            baseResponse.setTimestamp(new Date());
-                            baseResponse.setData(customerResponseDTO);
-                            return Mono.just(baseResponse);
-                        });
+                contextView -> customerClient.getCustomerGlobalMono(baseRequest)).flatMap(res -> {
+                    CustomerResponseDTO customerResponseDTO = CustomerResponseDTO
+                            .fromCustomerClientResponse(res.getData());
+                    var monoBranchCountry = getBranchAndCountry(baseRequest, res);
+                    //PROMISE ALL
+                    monoBranchCountry.subscribe(result -> {
+                        customerResponseDTO.setBranchName(result.getT1().getData().getBranchName());
+                        customerResponseDTO.setCountryDesc(result.getT2().getData().getCountryDesc());
+                    });
+                    BaseResponse<CustomerResponseDTO> baseResponse = BaseResponse.fromBaseResponse(res);
+                    baseResponse.setData(customerResponseDTO);
+                    return Mono.just(baseResponse);
+                });
     }
 
-    private Mono<Tuple2<BaseResponse<BranchClientResponse>, BaseResponse<CountryClientResponse>>> GetBranchAndCountry(
+    @Override
+    public Mono<BaseResponse<CustomerResponseDTO>> getCustomerInfo(BaseRequest<CustomerClientRequest> baseRequest) {
+        return Mono.deferContextual(
+                contextView -> customerClient.getCustomerMono(baseRequest)).flatMap(res -> {
+                    CustomerResponseDTO customerResponseDTO = CustomerResponseDTO
+                            .fromCustomerClientResponse(res.getData());
+                    var monoBranchCountry = getBranchAndCountry(baseRequest, res);
+                    monoBranchCountry.subscribe(result -> {
+                        customerResponseDTO.setBranchName(result.getT1().getData().getBranchName());
+                        customerResponseDTO.setCountryDesc(result.getT2().getData().getCountryDesc());
+                    });
+                    BaseResponse<CustomerResponseDTO> baseResponse = BaseResponse.fromBaseResponse(res);
+                    baseResponse.setData(customerResponseDTO);
+                    return Mono.just(baseResponse);
+                });
+    }
+
+    private Mono<Tuple2<BaseResponse<BranchClientResponse>, BaseResponse<CountryClientResponse>>> getBranchAndCountry(
             BaseRequest<?> baseRequest, BaseResponse<CustomerClientResponse> res) {
         BranchClientRequest branchClientRequest = new BranchClientRequest(res.getData().getCtrlBranch());
         CountryClientRequest countryClientRequest = new CountryClientRequest(res.getData().getCountryCitizen());

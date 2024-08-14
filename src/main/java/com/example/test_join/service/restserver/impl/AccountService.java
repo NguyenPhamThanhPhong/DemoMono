@@ -6,7 +6,6 @@ import com.example.test_join.dto.client.request.AccountClientRequest;
 import com.example.test_join.dto.client.request.CustomerClientRequest;
 import com.example.test_join.dto.client.response.CustomerClientResponse;
 import com.example.test_join.dto.server.request.BaseRequest;
-import com.example.test_join.dto.server.request.GetAccountRequest;
 import com.example.test_join.dto.server.response.AccountResponseDTO;
 import com.example.test_join.dto.server.response.BaseResponse;
 import com.example.test_join.exception.BadRequestException;
@@ -34,14 +33,14 @@ public class AccountService extends BaseService implements IAccountService {
     }
 
     @Override
-    public Mono<BaseResponse<AccountResponseDTO>> getAccountInfo(BaseRequest<GetAccountRequest> baseRequest) {
-        GetAccountRequest request = baseRequest.getData();
+    public Mono<BaseResponse<AccountResponseDTO>> getAccountInfo(BaseRequest<AccountClientRequest> baseRequest) {
+        AccountClientRequest request = baseRequest.getData();
         return validateRequest(request).then(
                 Mono.defer(() -> {
+                    BaseRequest<CustomerClientRequest> customerBaseRequest = BaseRequest.fromBaseRequest(baseRequest);
                     CustomerClientRequest customerClientRequest = CustomerClientRequest.template(request.getClientNo());
-                    BaseRequest<CustomerClientRequest> baseRequestCustomer = BaseRequest.fromBaseRequest(baseRequest);
-                    baseRequestCustomer.setData(customerClientRequest);
-                    return customerClient.getCientNo(baseRequestCustomer)
+                    customerBaseRequest.setData(customerClientRequest);
+                    return customerClient.getCientNo(customerBaseRequest)
                             .flatMap(this::validateClientNo)
                             .flatMap(this::validateBranch)
                             .flatMap(baseCustomerClientResponse -> {
@@ -63,7 +62,7 @@ public class AccountService extends BaseService implements IAccountService {
                 }));
     }
 
-    private Mono<Void> validateRequest(GetAccountRequest request) {
+    private Mono<Void> validateRequest(AccountClientRequest request) {
         if (request.getClientNo() == null || request.getClientNo().isEmpty()) {
             return Mono.error(new BadRequestException("Client number is required"));
         }

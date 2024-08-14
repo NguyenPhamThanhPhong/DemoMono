@@ -12,8 +12,8 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class AccountClient {
-            public Mono<BaseResponse<AccountClientResponse>> getAccountMono(
-                BaseRequest<AccountClientRequest> request) {
+    public Mono<BaseResponse<AccountClientResponse>> getAccountMono(
+            BaseRequest<AccountClientRequest> request) {
         BaseResponse<AccountClientResponse> result = BaseResponse.baseResponse(
                 request.getRequestId(),
                 ResponseEnum.DATA_SUCCESS);
